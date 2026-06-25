@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js
+**/.next/
+**/out/
+
+# Firebase
+.firebase/
+**/.firebase/
+**/firebase-debug.log
+**/firebase-debug.*.log
+**/.firebaserc
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Build output
+**/dist/
+**/build/
+functions/lib/
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# TypeScript
+*.tsbuildinfo
