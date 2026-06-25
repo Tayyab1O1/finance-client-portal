@@ -47,11 +47,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
 
       if (firebaseUser) {
+        document.cookie = "auth_present=1; path=/; SameSite=Strict; max-age=28800";
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
         if (snap.exists()) {
           setProfile(snap.data() as UserProfile);
         }
       } else {
+        document.cookie = "auth_present=; path=/; SameSite=Strict; max-age=0";
         setProfile(null);
       }
 

@@ -12,13 +12,13 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && user) {
-      router.replace("/dashboard");
-    }
-  }, [user, authLoading, router]);
+    if (authLoading || !user) return;
+    if (!profile) return;
+    router.replace(profile.role === "admin" ? "/admin" : "/dashboard");
+  }, [user, profile, authLoading, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace("/dashboard");
+      // redirect handled by useEffect above once profile loads
     } catch {
       setError("Invalid email or password. Please try again.");
     } finally {
@@ -41,8 +41,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Logo / Brand */}
       <div className="mb-8 text-center">
-        <img src="/logo.svg" alt="Sympl Finance" className="h-12 w-auto mx-auto mb-3" />
-        <p className="text-sm text-gray-500">Client Portal</p>
+        <img src="/logo.svg" alt="Sympl Finance" className="h-16 w-auto mx-auto mb-3" />
+        <p className="text-base text-gray-500">Client Portal</p>
       </div>
 
       {/* Card */}

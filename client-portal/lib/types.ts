@@ -15,6 +15,14 @@ export interface ClientProfile {
   createdAt?: Timestamp;
 }
 
+export interface UserRecord {
+  uid: string;
+  email: string;
+  role: "admin" | "client";
+  clientId: string | null;
+  createdAt?: import("firebase/firestore").Timestamp;
+}
+
 export interface ChecklistItem {
   id: string;
   name: string;

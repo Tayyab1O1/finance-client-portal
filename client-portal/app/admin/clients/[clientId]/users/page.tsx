@@ -1,0 +1,144 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { auth } from "@/lib/firebase";
+import { getIdToken } from "firebase/auth";
+import { getClientProfile, getUsersForClient } from "@/lib/firestore";
+import type { ClientProfile, UserRecord } from "@/lib/types";
+import AdminNav from "@/components/AdminNav";
+
+export default function ClientUsersPage() {
+  const { clientId } = useParams<{ clientId: string }>();
+  const [client, setClient] = useState<ClientProfile | null>(null);
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function loadData() {
+    const [c, u] = await Promise.all([getClientProfile(clientId), getUsersForClient(clientId)]);
+    setClient(c);
+    setUsers(u);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadData(); }, [clientId]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError(""); setSuccess(""); setCreating(true);
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("Not authenticated");
+      const idToken = await getIdToken(currentUser);
+
+      const res = await fetch("/api/admin/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ email, password, clientId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to create user");
+      }
+
+      setSuccess(`User ${email} created successfully.`);
+      setEmail(""); setPassword("");
+      await loadData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to create user.";
+      setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const displayName = client?.fullName || client?.clickupFolderName || clientId;
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <AdminNav />
+      <main className="flex-1 px-8 py-8 max-w-2xl">
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+          <Link href="/admin" className="hover:text-[#1a1a2e] transition">Dashboard</Link>
+          <span>/</span>
+          <Link href={`/admin/clients/${clientId}/edit`} className="hover:text-[#1a1a2e] transition">{displayName}</Link>
+          <span>/</span>
+          <span className="text-[#1a1a2e]">Users</span>
+        </div>
+
+        <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1">Client Users</h1>
+        <p className="text-sm text-gray-400 mb-6">{displayName}</p>
+
+        <section className="bg-white rounded-2xl border border-gray-100 p-6 mb-5">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Active Users</h2>
+          {loading ? (
+            <div className="space-y-2">{[1, 2].map(i => <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />)}</div>
+          ) : users.length === 0 ? (
+            <p className="text-sm text-gray-400 py-2">No users yet for this client.</p>
+          ) : (
+            <div className="space-y-2">
+              {users.map(u => (
+                <div key={u.uid} className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#1a1a2e]/10 flex items-center justify-center">
+                      <span className="text-xs font-semibold text-[#1a1a2e]">{u.email[0].toUpperCase()}</span>
+                    </div>
+                    <span className="text-sm text-gray-700">{u.email}</span>
+                  </div>
+                  <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">Active</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="bg-white rounded-2xl border border-gray-100 p-6">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Create New User</h2>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition"
+                placeholder="client@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <input type="password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition"
+                placeholder="Min. 6 characters" />
+            </div>
+            {error && (
+              <div className="flex gap-2 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg px-3.5 py-2.5">
+                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                </svg>
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="flex gap-2 bg-green-50 border border-green-100 text-green-700 text-sm rounded-lg px-3.5 py-2.5">
+                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {success}
+              </div>
+            )}
+            <button type="submit" disabled={creating}
+              className="w-full bg-[#1a1a2e] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#2d2d4e] disabled:opacity-60 transition flex items-center justify-center gap-2">
+              {creating ? (
+                <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creating...</>
+              ) : "Create user"}
+            </button>
+          </form>
+        </section>
+      </main>
+    </div>
+  );
+}
