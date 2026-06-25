@@ -93,6 +93,7 @@ function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
   const s = getStatus(task.status);
   const cadStyle  = getCadence(task.cadence);
   const typeStyle = getTaskType(task.taskType);
+  const respStyle = getResponsibility(task.responsibility);
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
@@ -107,6 +108,11 @@ function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
       {task.taskType && typeStyle && (
         <span className={`mt-0.5 inline-block text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full ${typeStyle.bg} ${typeStyle.text}`}>
           {task.taskType}
+        </span>
+      )}
+      {task.responsibility && respStyle && (
+        <span className={`mt-0.5 inline-block text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full ${respStyle.bg} ${respStyle.text}`}>
+          {task.responsibility}
         </span>
       )}
     </button>
