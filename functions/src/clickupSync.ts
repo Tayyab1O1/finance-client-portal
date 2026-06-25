@@ -169,12 +169,27 @@ export async function runSync(apiToken: string): Promise<void> {
       { merge: true } // preserves admin-managed fields (fullName, coverImageUrl, etc.)
     );
 
-    // Step 4: Fetch all tasks (paginated)
+    // Step 4: Fetch all tasks from ClickUp (paginated)
     const tasks = await fetchAllTasksFromList(monthlyList.id, apiToken);
     console.log(`  ${tasks.length} tasks fetched for ${folder.name}`);
 
-    // Step 5: Batch write tasks into subcollection
+    const clickupTaskIds = new Set(tasks.map((t) => t.id));
     const BATCH_SIZE = 400; // Firestore batch limit is 500 writes
+
+    // Step 5: Delete tasks that no longer exist in ClickUp
+    const existingSnap = await clientRef.collection("tasks").select().get();
+    const toDelete = existingSnap.docs.filter((d) => !clickupTaskIds.has(d.id));
+
+    if (toDelete.length > 0) {
+      console.log(`  Deleting ${toDelete.length} removed tasks for ${folder.name}`);
+      for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
+        const batch = db.batch();
+        toDelete.slice(i, i + BATCH_SIZE).forEach((d) => batch.delete(d.ref));
+        await batch.commit();
+      }
+    }
+
+    // Step 6: Upsert all current tasks
     for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
       const batch = db.batch();
       const chunk = tasks.slice(i, i + BATCH_SIZE);
