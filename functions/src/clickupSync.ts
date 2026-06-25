@@ -177,14 +177,15 @@ export async function runSync(apiToken: string): Promise<void> {
     const BATCH_SIZE = 400; // Firestore batch limit is 500 writes
 
     // Step 5: Delete tasks that no longer exist in ClickUp
-    const existingSnap = await clientRef.collection("tasks").select().get();
-    const toDelete = existingSnap.docs.filter((d) => !clickupTaskIds.has(d.id));
+    const existingRefs = await clientRef.collection("tasks").listDocuments();
+    const toDelete = existingRefs.filter((ref) => !clickupTaskIds.has(ref.id));
+
+    console.log(`  ${existingRefs.length} existing tasks in Firestore, ${toDelete.length} to delete`);
 
     if (toDelete.length > 0) {
-      console.log(`  Deleting ${toDelete.length} removed tasks for ${folder.name}`);
       for (let i = 0; i < toDelete.length; i += BATCH_SIZE) {
         const batch = db.batch();
-        toDelete.slice(i, i + BATCH_SIZE).forEach((d) => batch.delete(d.ref));
+        toDelete.slice(i, i + BATCH_SIZE).forEach((ref) => batch.delete(ref));
         await batch.commit();
       }
     }
