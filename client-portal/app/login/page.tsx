@@ -41,11 +41,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Logo / Brand */}
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1a1a2e] mb-4">
-          <span className="text-white font-bold text-lg">S</span>
-        </div>
-        <h1 className="text-2xl font-bold text-[#1a1a2e]">Sympl Finance</h1>
-        <p className="text-sm text-gray-500 mt-1">Client Portal</p>
+        <img src="/logo.svg" alt="Sympl Finance" className="h-12 w-auto mx-auto mb-3" />
+        <p className="text-sm text-gray-500">Client Portal</p>
       </div>
 
       {/* Card */}
