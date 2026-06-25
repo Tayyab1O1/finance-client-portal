@@ -26,9 +26,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Keep spinner going — useEffect redirects once profile loads, unmounting this page
     } catch {
       showToast("Invalid email or password. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
