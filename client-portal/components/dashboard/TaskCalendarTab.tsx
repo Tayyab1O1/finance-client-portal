@@ -94,6 +94,8 @@ function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
   const cadStyle  = getCadence(task.cadence);
   const typeStyle = getTaskType(task.taskType);
   const respStyle = getResponsibility(task.responsibility);
+  const totalPoints = task.checklist?.length ?? 0;
+  const completedPoints = task.checklist?.filter(c => c.resolved).length ?? 0;
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick(); }}
@@ -114,11 +116,18 @@ function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
           )}
         </div>
       )}
-      {task.responsibility && respStyle && (
-        <div className="mt-0.5">
-          <span className={`text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full inline-block ${respStyle.bg} ${respStyle.text}`}>
-            {task.responsibility}
-          </span>
+      {(task.responsibility || totalPoints > 0) && (
+        <div className="mt-0.5 flex items-center gap-1 overflow-hidden">
+          {task.responsibility && respStyle && (
+            <span className={`text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate min-w-0 ${respStyle.bg} ${respStyle.text}`}>
+              {task.responsibility}
+            </span>
+          )}
+          {totalPoints > 0 && (
+            <span className="text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 shrink-0">
+              {completedPoints}/{totalPoints} pts
+            </span>
+          )}
         </div>
       )}
     </button>
@@ -194,7 +203,7 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 pt-6 pb-10 space-y-6">
 
           {/* Description */}
           {task.description && (

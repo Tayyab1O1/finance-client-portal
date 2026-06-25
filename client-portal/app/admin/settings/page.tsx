@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import { getPortalSettings, updatePortalSettings } from "@/lib/firestore";
+import { useToast } from "@/context/ToastContext";
 
 export default function SettingsPage() {
   const [services, setServices] = useState<string[]>([]);
@@ -10,6 +11,7 @@ export default function SettingsPage() {
   const [newService, setNewService] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     getPortalSettings().then(s => { setServices(s.servicesOptions); setLoading(false); });
@@ -49,7 +51,11 @@ export default function SettingsPage() {
     try {
       await updatePortalSettings({ servicesOptions: services });
       setSaved(true);
+      showToast("Settings saved.", "success");
       setTimeout(() => setSaved(false), 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save settings.";
+      showToast(msg);
     } finally {
       setSaving(false);
     }

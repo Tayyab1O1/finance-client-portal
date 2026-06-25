@@ -8,6 +8,7 @@ import { getIdToken } from "firebase/auth";
 import { getClientProfile, getUsersForClient } from "@/lib/firestore";
 import type { ClientProfile, UserRecord } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
+import { useToast } from "@/context/ToastContext";
 
 export default function ClientUsersPage() {
   const { clientId } = useParams<{ clientId: string }>();
@@ -17,8 +18,7 @@ export default function ClientUsersPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { showToast } = useToast();
 
   async function loadData() {
     const [c, u] = await Promise.all([getClientProfile(clientId), getUsersForClient(clientId)]);
@@ -31,7 +31,7 @@ export default function ClientUsersPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    setError(""); setSuccess(""); setCreating(true);
+    setCreating(true);
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Not authenticated");
@@ -48,12 +48,12 @@ export default function ClientUsersPage() {
         throw new Error(data.error || "Failed to create user");
       }
 
-      setSuccess(`User ${email} created successfully.`);
+      showToast(`User ${email} created successfully.`, "success");
       setEmail(""); setPassword("");
       await loadData();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to create user.";
-      setError(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
+      showToast(msg.replace("Firebase: ", "").replace(/\(auth\/.*\)/, "").trim());
     } finally {
       setCreating(false);
     }
@@ -114,22 +114,6 @@ export default function ClientUsersPage() {
                 className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition"
                 placeholder="Min. 6 characters" />
             </div>
-            {error && (
-              <div className="flex gap-2 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg px-3.5 py-2.5">
-                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-                </svg>
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="flex gap-2 bg-green-50 border border-green-100 text-green-700 text-sm rounded-lg px-3.5 py-2.5">
-                <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                {success}
-              </div>
-            )}
             <button type="submit" disabled={creating}
               className="w-full bg-[#1a1a2e] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-[#2d2d4e] disabled:opacity-60 transition flex items-center justify-center gap-2">
               {creating ? (

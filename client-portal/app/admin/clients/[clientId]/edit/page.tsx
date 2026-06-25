@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getClientProfile, updateClientProfile, getPortalSettings } from "@/lib/firestore";
+import { useToast } from "@/context/ToastContext";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { ClientProfile } from "@/lib/types";
@@ -15,6 +16,7 @@ export default function EditClientPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const { showToast } = useToast();
 
   const [serviceOptions, setServiceOptions] = useState<string[]>([]);
   const [fullName, setFullName] = useState("");
@@ -73,7 +75,11 @@ export default function EditClientPage() {
       if (coverFile) updates.coverImageUrl = await uploadImage(coverFile, `clients/${clientId}/cover`);
       await updateClientProfile(clientId, updates);
       setSaved(true);
+      showToast("Profile saved successfully.", "success");
       setTimeout(() => setSaved(false), 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save profile.";
+      showToast(msg);
     } finally {
       setSaving(false);
     }
