@@ -100,20 +100,26 @@ function TaskChip({ task, onClick }: { task: Task; onClick: () => void }) {
       className={`w-full text-left px-2 py-1.5 rounded border ${s.bg} ${s.border} hover:brightness-95 transition`}
     >
       <p className={`text-xs font-semibold leading-snug truncate ${s.text}`}>{task.name}</p>
-      {task.cadence && cadStyle && (
-        <span className={`mt-0.5 inline-block text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full ${cadStyle.bg} ${cadStyle.text}`}>
-          {task.cadence}
-        </span>
-      )}
-      {task.taskType && typeStyle && (
-        <span className={`mt-0.5 inline-block text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full ${typeStyle.bg} ${typeStyle.text}`}>
-          {task.taskType}
-        </span>
+      {(task.cadence || task.taskType) && (
+        <div className="mt-0.5 flex gap-1 overflow-hidden">
+          {task.cadence && cadStyle && (
+            <span className={`text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate min-w-0 ${cadStyle.bg} ${cadStyle.text}`}>
+              {task.cadence}
+            </span>
+          )}
+          {task.taskType && typeStyle && (
+            <span className={`text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate min-w-0 ${typeStyle.bg} ${typeStyle.text}`}>
+              {task.taskType}
+            </span>
+          )}
+        </div>
       )}
       {task.responsibility && respStyle && (
-        <span className={`mt-0.5 inline-block text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full ${respStyle.bg} ${respStyle.text}`}>
-          {task.responsibility}
-        </span>
+        <div className="mt-0.5">
+          <span className={`text-[11px] leading-snug font-medium px-1.5 py-0.5 rounded truncate max-w-full inline-block ${respStyle.bg} ${respStyle.text}`}>
+            {task.responsibility}
+          </span>
+        </div>
       )}
     </button>
   );
