@@ -1,9 +1,17 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+
+const SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+function isSessionExpired(firebaseUser: User): boolean {
+  const lastSignIn = firebaseUser.metadata.lastSignInTime;
+  if (!lastSignIn) return false;
+  return Date.now() - new Date(lastSignIn).getTime() > SESSION_DURATION_MS;
+}
 
 interface UserProfile {
   uid: string;
@@ -27,6 +35,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser && isSessionExpired(firebaseUser)) {
+        await signOut(auth);
+        return;
+      }
+
       setUser(firebaseUser);
       if (firebaseUser) {
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
@@ -37,6 +50,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
     return () => unsub();
+  }, []);
+
+  // Periodic check — expires session mid-use without requiring navigation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentUser = auth.currentUser;
+      if (currentUser && isSessionExpired(currentUser)) {
+        signOut(auth);
+      }
+    }, 60 * 1000); // check every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   return <AuthContext.Provider value={{ user, profile, loading }}>{children}</AuthContext.Provider>;
