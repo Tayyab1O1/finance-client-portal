@@ -6,8 +6,8 @@ import { AuthProvider } from "@/context/AuthContext";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sympl Finance — Admin",
-  description: "Admin portal for Sympl Finance",
+  title: "Admin Portal | Sympl Finance",
+  description: "Internal admin portal for Sympl Finance staff.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

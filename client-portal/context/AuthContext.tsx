@@ -13,6 +13,10 @@ function isSessionExpired(firebaseUser: User): boolean {
   return Date.now() - new Date(lastSignIn).getTime() > SESSION_DURATION_MS;
 }
 
+// Secure is omitted on plain-http origins (e.g. local dev) since browsers silently
+// refuse to set Secure cookies there — this would otherwise break local sign-in.
+const COOKIE_SECURITY = typeof window !== "undefined" && window.location.protocol === "https:" ? "; Secure" : "";
+
 interface UserProfile {
   uid: string;
   email: string;
@@ -47,13 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
 
       if (firebaseUser) {
-        document.cookie = "auth_present=1; path=/; SameSite=Strict; max-age=28800";
+        document.cookie = `auth_present=1; path=/${COOKIE_SECURITY}; SameSite=Strict; max-age=28800`;
         const snap = await getDoc(doc(db, "users", firebaseUser.uid));
         if (snap.exists()) {
           setProfile(snap.data() as UserProfile);
         }
       } else {
-        document.cookie = "auth_present=; path=/; SameSite=Strict; max-age=0";
+        document.cookie = `auth_present=; path=/${COOKIE_SECURITY}; SameSite=Strict; max-age=0`;
         setProfile(null);
       }
 
