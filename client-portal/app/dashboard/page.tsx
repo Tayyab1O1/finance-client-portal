@@ -19,8 +19,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
-        <img src="/logo.svg" alt="Sympl Finance" className="h-7 w-auto" />
+      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <img src="/logo.svg" alt="Sympl Finance" className="h-6 sm:h-7 w-auto" />
         <button onClick={handleSignOut}
           className="text-sm text-gray-500 hover:text-[#1a1a2e] transition flex items-center gap-1.5">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

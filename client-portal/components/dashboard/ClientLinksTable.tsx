@@ -14,7 +14,7 @@ export default function ClientLinksTable({ links }: Props) {
   if (!links || links.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
       <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
         Links
       </h2>

@@ -64,13 +64,13 @@ export default function ClientUsersPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <AdminNav />
-      <main className="flex-1 px-8 py-8 max-w-2xl">
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/admin" className="hover:text-[#1a1a2e] transition">Dashboard</Link>
-          <span>/</span>
-          <Link href={`/admin/clients/${clientId}/edit`} className="hover:text-[#1a1a2e] transition">{displayName}</Link>
-          <span>/</span>
-          <span className="text-[#1a1a2e]">Users</span>
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-6 md:py-8 max-w-2xl">
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 min-w-0">
+          <Link href="/admin" className="hover:text-[#1a1a2e] transition shrink-0">Dashboard</Link>
+          <span className="shrink-0">/</span>
+          <Link href={`/admin/clients/${clientId}/edit`} className="hover:text-[#1a1a2e] transition truncate">{displayName}</Link>
+          <span className="shrink-0">/</span>
+          <span className="text-[#1a1a2e] shrink-0">Users</span>
         </div>
 
         <h1 className="text-2xl font-bold text-[#1a1a2e] mb-1">Client Users</h1>
@@ -85,14 +85,14 @@ export default function ClientUsersPage() {
           ) : (
             <div className="space-y-2">
               {users.map(u => (
-                <div key={u.uid} className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#1a1a2e]/10 flex items-center justify-center">
+                <div key={u.uid} className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-[#1a1a2e]/10 flex items-center justify-center shrink-0">
                       <span className="text-xs font-semibold text-[#1a1a2e]">{u.email[0].toUpperCase()}</span>
                     </div>
-                    <span className="text-sm text-gray-700">{u.email}</span>
+                    <span className="text-sm text-gray-700 truncate">{u.email}</span>
                   </div>
-                  <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">Active</span>
+                  <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium shrink-0">Active</span>
                 </div>
               ))}
             </div>

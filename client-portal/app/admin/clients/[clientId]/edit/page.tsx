@@ -122,16 +122,16 @@ export default function EditClientPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <AdminNav />
-      <main className="flex-1 px-8 py-8 max-w-3xl">
-        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-          <Link href="/admin" className="hover:text-[#1a1a2e] transition">Dashboard</Link>
-          <span>/</span>
-          <span className="text-[#1a1a2e] font-medium">{displayName}</span>
-          <span>/</span>
-          <span className="text-[#1a1a2e]">Edit</span>
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-6 md:py-8 max-w-3xl">
+        <div className="flex items-center gap-2 text-sm text-gray-400 mb-6 min-w-0">
+          <Link href="/admin" className="hover:text-[#1a1a2e] transition shrink-0">Dashboard</Link>
+          <span className="shrink-0">/</span>
+          <span className="text-[#1a1a2e] font-medium truncate">{displayName}</span>
+          <span className="shrink-0">/</span>
+          <span className="text-[#1a1a2e] shrink-0">Edit</span>
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <h1 className="text-2xl font-bold text-[#1a1a2e]">Edit Client Profile</h1>
           <div className="flex gap-2">
             <Link href={`/admin/clients/${clientId}/users`}
@@ -207,7 +207,7 @@ export default function EditClientPage() {
 
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Services Availed</h2>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {serviceOptions.map(s => (
                 <button key={s} type="button" onClick={() => toggleService(s)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition text-left w-full ${
@@ -247,22 +247,34 @@ export default function EditClientPage() {
                   <span className="col-span-5">Link</span>
                 </div>
                 {clientLinks.map(link => (
-                  <div key={link.id} className="grid grid-cols-12 gap-2 items-center">
-                    <input value={link.label} onChange={e => updateLink(link.id, "label", e.target.value)}
-                      placeholder="What is this link"
-                      className="col-span-3 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
-                    <input value={link.linkText} onChange={e => updateLink(link.id, "linkText", e.target.value)}
-                      placeholder="Hyperlink text"
-                      className="col-span-3 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
-                    <input value={link.url} onChange={e => updateLink(link.id, "url", e.target.value)}
-                      placeholder="https://..."
-                      className="col-span-4 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
-                    <button type="button" onClick={() => removeLink(link.id)} aria-label="Remove link"
-                      className="col-span-1 flex items-center justify-center text-gray-400 hover:text-red-500 transition">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                  <div key={link.id} className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:items-center border border-gray-100 sm:border-0 rounded-lg p-3 sm:p-0">
+                    <div className="sm:col-span-3">
+                      <label className="sm:hidden block text-xs text-gray-400 mb-1">What is this link</label>
+                      <input value={link.label} onChange={e => updateLink(link.id, "label", e.target.value)}
+                        placeholder="What is this link"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <label className="sm:hidden block text-xs text-gray-400 mb-1">Hyperlink text</label>
+                      <input value={link.linkText} onChange={e => updateLink(link.id, "linkText", e.target.value)}
+                        placeholder="Hyperlink text"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    </div>
+                    <div className="sm:col-span-4">
+                      <label className="sm:hidden block text-xs text-gray-400 mb-1">Link</label>
+                      <input value={link.url} onChange={e => updateLink(link.id, "url", e.target.value)}
+                        placeholder="https://..."
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    </div>
+                    <div className="sm:col-span-1 flex sm:justify-center justify-end">
+                      <button type="button" onClick={() => removeLink(link.id)} aria-label="Remove link"
+                        className="flex items-center gap-1.5 text-gray-400 hover:text-red-500 transition p-1.5">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span className="sm:hidden text-xs">Remove link</span>
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

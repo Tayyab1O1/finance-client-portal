@@ -10,6 +10,7 @@
   --mist: #e0f2f0;
   --yolk: #ffe079;
   --buttercup: #fff5ab;
+  --harvest: #e38900;
   --paper: #fbf5f0;
   --line: rgba(0, 34, 54, 0.1);
 }
@@ -24,6 +25,7 @@
   --color-mist: var(--mist);
   --color-yolk: var(--yolk);
   --color-buttercup: var(--buttercup);
+  --color-harvest: var(--harvest);
   --color-paper: var(--paper);
   --font-sans: var(--font-onest);
   --font-serif: var(--font-lora);

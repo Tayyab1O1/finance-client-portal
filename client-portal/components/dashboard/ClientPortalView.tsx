@@ -39,7 +39,7 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
   return (
     <>
       {/* Banner */}
-      <div className="relative h-48 bg-[#1a1a2e] overflow-hidden shrink-0">
+      <div className="relative h-32 sm:h-40 md:h-48 bg-[#1a1a2e] overflow-hidden shrink-0">
         {clientProfile?.coverImageUrl ? (
           <img src={clientProfile.coverImageUrl} alt="Cover" className="w-full h-full object-cover opacity-60" />
         ) : (
@@ -48,38 +48,38 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
               style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #4f8ef7 0%, transparent 50%), radial-gradient(circle at 80% 20%, #7c3aed 0%, transparent 40%)" }} />
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 px-8 pb-6 flex items-end gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6 md:px-8 pb-3 sm:pb-5 md:pb-6 flex items-end gap-3 sm:gap-4">
+          <div className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl md:rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
             {clientProfile?.logoImageUrl
               ? <img src={clientProfile.logoImageUrl} alt="Logo" className="w-full h-full object-contain p-1" />
-              : <span className="text-white text-xl font-bold">{initials}</span>
+              : <span className="text-white text-base sm:text-xl font-bold">{initials}</span>
             }
           </div>
-          <div className="pb-0.5">
-            <h1 className="text-white text-2xl font-bold leading-tight">
+          <div className="pb-0.5 min-w-0">
+            <h1 className="text-white text-lg sm:text-xl md:text-2xl font-bold leading-tight truncate">
               {loading ? <span className="block w-40 h-7 bg-white/20 rounded animate-pulse" /> : displayName}
             </h1>
             {clientProfile?.executiveDirectorName && (
-              <p className="text-white/70 text-sm mt-0.5">Executive Director: {clientProfile.executiveDirectorName}</p>
+              <p className="text-white/70 text-xs sm:text-sm mt-0.5 truncate">Executive Director: {clientProfile.executiveDirectorName}</p>
             )}
           </div>
         </div>
         {adminOverlay && (
-          <div className="absolute top-3 right-3 bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full border border-white/20">
+          <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-2.5 sm:px-3 py-1 rounded-full border border-white/20">
             Admin View
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-100 px-8 shrink-0">
-        <nav className="flex gap-1 -mb-px">
+      <div className="bg-white border-b border-gray-100 px-4 sm:px-6 md:px-8 shrink-0 overflow-x-auto">
+        <nav className="flex gap-1 -mb-px w-max sm:w-auto">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id ? "border-[#1a1a2e] text-[#1a1a2e]" : "border-transparent text-gray-500 hover:text-gray-700"
               }`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
               </svg>
               {tab.label}
@@ -89,7 +89,7 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
       </div>
 
       {/* Tab content */}
-      <main className="flex-1 px-8 py-6 w-full">
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-5 sm:py-6 w-full">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-[#1a1a2e] border-t-transparent rounded-full animate-spin" />

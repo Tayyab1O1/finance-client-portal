@@ -64,7 +64,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <AdminNav />
-      <main className="flex-1 px-8 py-8 max-w-2xl">
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-6 md:py-8 max-w-2xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1a1a2e]">Settings</h1>
           <p className="text-sm text-gray-500 mt-1">Configure portal-wide options</p>
@@ -99,9 +99,9 @@ export default function SettingsPage() {
                       </svg>
                     </button>
                   </div>
-                  <span className="flex-1 text-sm text-gray-700">{s}</span>
+                  <span className="flex-1 text-sm text-gray-700 truncate">{s}</span>
                   <button onClick={() => removeService(s)}
-                    className="p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition rounded">
+                    className="p-1 text-gray-300 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition rounded">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>

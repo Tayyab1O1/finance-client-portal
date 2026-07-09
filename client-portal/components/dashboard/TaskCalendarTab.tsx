@@ -158,10 +158,10 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
   return (
     <>
       <div className="fixed inset-0 bg-black/25 z-40 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
+      <div className="fixed top-0 right-0 h-full w-full sm:max-w-xl bg-white shadow-2xl z-50 flex flex-col overflow-hidden">
 
         {/* Decorative banner */}
-        <div className="relative h-32 bg-[#1a1a2e] shrink-0 overflow-hidden">
+        <div className="relative h-28 sm:h-32 bg-[#1a1a2e] shrink-0 overflow-hidden">
           <div className="absolute inset-0"
             style={{ backgroundImage: "radial-gradient(circle at 15% 60%, #4f8ef7 0%, transparent 45%), radial-gradient(circle at 85% 20%, #7c3aed 0%, transparent 40%), radial-gradient(circle at 50% 110%, #06b6d4 0%, transparent 50%)" }}
           />
@@ -170,13 +170,13 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
             style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "24px 24px" }}
           />
           {/* Close button */}
-          <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition">
+          <button onClick={onClose} className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
           {/* Status dot */}
-          <div className="absolute bottom-4 left-6 flex items-center gap-2">
+          <div className="absolute bottom-4 left-4 sm:left-6 flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full border-2 border-white/40 ${s.dot}`} />
             <span className={`text-sm font-medium px-3 py-1 rounded-full border ${s.bg} ${s.text} ${s.border}`}>
               {s.label}
@@ -185,7 +185,7 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
         </div>
 
         {/* Task title block */}
-        <div className="px-6 pt-5 pb-4 border-b border-gray-100">
+        <div className="px-4 sm:px-6 pt-5 pb-4 border-b border-gray-100">
           <h2 className="text-lg font-bold text-[#1a1a2e] leading-snug">{task.name}</h2>
           {(task.responsibility || task.cadence) && (
             <div className="flex flex-wrap gap-2 mt-3">
@@ -203,7 +203,7 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 pt-6 pb-10 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pt-6 pb-10 space-y-6">
 
           {/* Description */}
           {task.description && (
@@ -216,7 +216,7 @@ function DetailSidebar({ task, onClose }: { task: Task | null; onClose: () => vo
           {/* Detail fields */}
           <div>
             <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Details</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {dueDate && (
                 <DetailField label="Due Date"
                   value={dueDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
@@ -313,6 +313,48 @@ function Legend() {
   );
 }
 
+// ─── Agenda view (mobile) ───────────────────────────────────────────────────
+// Below the `sm` breakpoint a 7-column grid has ~50px per day — too narrow for
+// task chips. Agenda mode stacks each day as a full-width row instead.
+
+function AgendaView({ days, tasksByDay, todayKey, onSelectTask }: {
+  days: Date[];
+  tasksByDay: Map<string, Task[]>;
+  todayKey: string;
+  onSelectTask: (t: Task) => void;
+}) {
+  return (
+    <div className="divide-y divide-gray-100">
+      {days.map(day => {
+        const key = toDateKey(day);
+        const dayTasks = tasksByDay.get(key) ?? [];
+        const isToday = key === todayKey;
+        return (
+          <div key={key} className={`p-3 ${isToday ? "bg-blue-50/40" : ""}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`text-xs font-semibold w-7 h-7 flex items-center justify-center rounded-full shrink-0 ${
+                isToday ? "bg-[#1a1a2e] text-white" : "text-gray-500 bg-gray-100"
+              }`}>
+                {day.getDate()}
+              </div>
+              <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{DAY_NAMES[day.getDay()]}</span>
+            </div>
+            {dayTasks.length === 0 ? (
+              <p className="text-xs text-gray-300 pl-9">No tasks</p>
+            ) : (
+              <div className="flex flex-col gap-1.5 pl-9">
+                {dayTasks.map(task => (
+                  <TaskChip key={task.taskId} task={task} onClick={() => onSelectTask(task)} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Month view ─────────────────────────────────────────────────────────────
 
 function MonthView({ year, month, tasksByDay, todayKey, onSelectTask }: {
@@ -328,37 +370,46 @@ function MonthView({ year, month, tasksByDay, todayKey, onSelectTask }: {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
   while (cells.length % 7 !== 0) cells.push(null);
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100">
-      {/* Sticky day headers */}
-      <div className="sticky top-0 z-10 bg-white grid grid-cols-7 border-b border-gray-100 rounded-t-2xl">
-        {DAY_NAMES.map(d => (
-          <div key={d} className="py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
-        ))}
+      {/* Mobile: agenda list */}
+      <div className="sm:hidden">
+        <AgendaView days={monthDays} tasksByDay={tasksByDay} todayKey={todayKey} onSelectTask={onSelectTask} />
       </div>
-      {/* Cells */}
-      <div className="grid grid-cols-7 divide-x divide-y divide-gray-100">
-        {cells.map((day, i) => {
-          if (!day) return <div key={`e-${i}`} className="min-h-32 bg-gray-50/40" />;
-          const key = toDateKey(new Date(year, month, day));
-          const dayTasks = tasksByDay.get(key) ?? [];
-          const isToday = key === todayKey;
-          return (
-            <div key={day} className={`min-h-32 p-1.5 flex flex-col gap-1 ${isToday ? "bg-blue-50/50" : "hover:bg-gray-50/60"} transition`}>
-              <div className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full shrink-0 ${
-                isToday ? "bg-[#1a1a2e] text-white" : "text-gray-500"
-              }`}>
-                {day}
+
+      {/* Tablet/desktop: grid */}
+      <div className="hidden sm:block">
+        {/* Sticky day headers */}
+        <div className="sticky top-0 z-10 bg-white grid grid-cols-7 border-b border-gray-100 rounded-t-2xl">
+          {DAY_NAMES.map(d => (
+            <div key={d} className="py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide">{d}</div>
+          ))}
+        </div>
+        {/* Cells */}
+        <div className="grid grid-cols-7 divide-x divide-y divide-gray-100">
+          {cells.map((day, i) => {
+            if (!day) return <div key={`e-${i}`} className="min-h-32 bg-gray-50/40" />;
+            const key = toDateKey(new Date(year, month, day));
+            const dayTasks = tasksByDay.get(key) ?? [];
+            const isToday = key === todayKey;
+            return (
+              <div key={day} className={`min-h-32 p-1.5 flex flex-col gap-1 ${isToday ? "bg-blue-50/50" : "hover:bg-gray-50/60"} transition`}>
+                <div className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full shrink-0 ${
+                  isToday ? "bg-[#1a1a2e] text-white" : "text-gray-500"
+                }`}>
+                  {day}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  {dayTasks.map(task => (
+                    <TaskChip key={task.taskId} task={task} onClick={() => onSelectTask(task)} />
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col gap-0.5">
-                {dayTasks.map(task => (
-                  <TaskChip key={task.taskId} task={task} onClick={() => onSelectTask(task)} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -376,42 +427,50 @@ function WeekView({ weekStart, tasksByDay, todayKey, onSelectTask }: {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100">
-      {/* Sticky day + date header */}
-      <div className="sticky top-0 z-10 bg-white rounded-t-2xl grid grid-cols-7 divide-x divide-gray-100 border-b border-gray-100">
-        {days.map(day => {
-          const key = toDateKey(day);
-          const isToday = key === todayKey;
-          return (
-            <div key={`h-${key}`} className={`py-3 text-center ${isToday ? "bg-blue-50/50" : ""}`}>
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                {DAY_NAMES[day.getDay()]}
-              </p>
-              <div className={`mx-auto mt-1 w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${
-                isToday ? "bg-[#1a1a2e] text-white" : "text-gray-700"
-              }`}>
-                {day.getDate()}
-              </div>
-            </div>
-          );
-        })}
+      {/* Mobile: agenda list */}
+      <div className="sm:hidden">
+        <AgendaView days={days} tasksByDay={tasksByDay} todayKey={todayKey} onSelectTask={onSelectTask} />
       </div>
-      {/* Task columns */}
-      <div className="grid grid-cols-7 divide-x divide-gray-100">
-        {days.map(day => {
-          const key = toDateKey(day);
-          const dayTasks = tasksByDay.get(key) ?? [];
-          const isToday = key === todayKey;
-          return (
-            <div key={key} className={`p-2 flex flex-col gap-1.5 min-h-40 ${isToday ? "bg-blue-50/20" : ""}`}>
-              {dayTasks.length === 0 && (
-                <p className="text-[10px] text-gray-300 text-center mt-4">—</p>
-              )}
-              {dayTasks.map(task => (
-                <TaskChip key={task.taskId} task={task} onClick={() => onSelectTask(task)} />
-              ))}
-            </div>
-          );
-        })}
+
+      {/* Tablet/desktop: grid */}
+      <div className="hidden sm:block">
+        {/* Sticky day + date header */}
+        <div className="sticky top-0 z-10 bg-white rounded-t-2xl grid grid-cols-7 divide-x divide-gray-100 border-b border-gray-100">
+          {days.map(day => {
+            const key = toDateKey(day);
+            const isToday = key === todayKey;
+            return (
+              <div key={`h-${key}`} className={`py-3 text-center ${isToday ? "bg-blue-50/50" : ""}`}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  {DAY_NAMES[day.getDay()]}
+                </p>
+                <div className={`mx-auto mt-1 w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${
+                  isToday ? "bg-[#1a1a2e] text-white" : "text-gray-700"
+                }`}>
+                  {day.getDate()}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {/* Task columns */}
+        <div className="grid grid-cols-7 divide-x divide-gray-100">
+          {days.map(day => {
+            const key = toDateKey(day);
+            const dayTasks = tasksByDay.get(key) ?? [];
+            const isToday = key === todayKey;
+            return (
+              <div key={key} className={`p-2 flex flex-col gap-1.5 min-h-40 ${isToday ? "bg-blue-50/20" : ""}`}>
+                {dayTasks.length === 0 && (
+                  <p className="text-[10px] text-gray-300 text-center mt-4">—</p>
+                )}
+                {dayTasks.map(task => (
+                  <TaskChip key={task.taskId} task={task} onClick={() => onSelectTask(task)} />
+                ))}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -476,20 +535,20 @@ export default function TaskCalendarTab({ tasks }: Props) {
   return (
     <div className="space-y-4 w-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3 sm:gap-4 flex-wrap">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button onClick={prevPeriod} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#1a1a2e] transition">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          <h2 className="text-base font-semibold text-[#1a1a2e] min-w-48 text-center">{headerLabel}</h2>
+          <h2 className="text-sm sm:text-base font-semibold text-[#1a1a2e] min-w-32 sm:min-w-48 text-center">{headerLabel}</h2>
           <button onClick={nextPeriod} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-[#1a1a2e] transition">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
-          <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium text-[#1a1a2e] hover:bg-gray-100 rounded-lg border border-gray-200 transition">
+          <button onClick={goToday} className="px-2.5 sm:px-3 py-1.5 text-xs font-medium text-[#1a1a2e] hover:bg-gray-100 rounded-lg border border-gray-200 transition whitespace-nowrap">
             Today
           </button>
         </div>

@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen flex flex-col">
       <AdminNav />
-      <main className="flex-1 px-8 py-8">
+      <main className="flex-1 px-4 sm:px-6 md:px-8 py-6 md:py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1a1a2e]">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">{clients.length} clients</p>

@@ -40,11 +40,11 @@ export default function ClientInfoTab({ profile }: Props) {
   return (
     <div className="space-y-4">
       {/* Main info card */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
           Account Details
         </h2>
-        <dl className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+        <dl className="grid grid-cols-2 gap-4 sm:gap-5 sm:grid-cols-3">
           <InfoRow label="Client Name" value={profile.fullName || profile.clickupFolderName} />
           <InfoRow label="Executive Director" value={profile.executiveDirectorName} />
           <InfoRow label="Client Code" value={profile.clickupFolderName} />
@@ -53,7 +53,7 @@ export default function ClientInfoTab({ profile }: Props) {
 
       {/* Services card */}
       {profile.servicesAvailed && profile.servicesAvailed.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
             Services Availed
           </h2>
