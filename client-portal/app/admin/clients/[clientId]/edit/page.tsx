@@ -7,7 +7,7 @@ import { getClientProfile, updateClientProfile, getPortalSettings } from "@/lib/
 import { useToast } from "@/context/ToastContext";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import type { ClientProfile } from "@/lib/types";
+import type { ClientLink, ClientProfile } from "@/lib/types";
 import AdminNav from "@/components/AdminNav";
 
 export default function EditClientPage() {
@@ -22,6 +22,7 @@ export default function EditClientPage() {
   const [fullName, setFullName] = useState("");
   const [executiveDirectorName, setExecutiveDirectorName] = useState("");
   const [servicesAvailed, setServicesAvailed] = useState<string[]>([]);
+  const [clientLinks, setClientLinks] = useState<ClientLink[]>([]);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const logoFileRef = useRef<HTMLInputElement>(null);
@@ -37,6 +38,7 @@ export default function EditClientPage() {
       setFullName(c.fullName ?? "");
       setExecutiveDirectorName(c.executiveDirectorName ?? "");
       setServicesAvailed(c.servicesAvailed ?? []);
+      setClientLinks(c.clientLinks ?? []);
       setLogoPreview(c.logoImageUrl ?? null);
       setCoverPreview(c.coverImageUrl ?? null);
       setLoading(false);
@@ -45,6 +47,24 @@ export default function EditClientPage() {
 
   function toggleService(s: string) {
     setServicesAvailed(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  }
+
+  function addLink() {
+    setClientLinks(prev => [...prev, { id: crypto.randomUUID(), label: "", linkText: "", url: "" }]);
+  }
+
+  function updateLink(id: string, field: keyof Omit<ClientLink, "id">, value: string) {
+    setClientLinks(prev => prev.map(link => link.id === id ? { ...link, [field]: value } : link));
+  }
+
+  function removeLink(id: string) {
+    setClientLinks(prev => prev.filter(link => link.id !== id));
+  }
+
+  function normalizeUrl(url: string): string {
+    const trimmed = url.trim();
+    if (!trimmed) return trimmed;
+    return /^(https?:\/\/|mailto:)/i.test(trimmed) ? trimmed : `https://${trimmed}`;
   }
 
   function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,7 +90,10 @@ export default function EditClientPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const updates: Partial<ClientProfile> = { fullName, executiveDirectorName, servicesAvailed };
+      const cleanedLinks = clientLinks
+        .filter(link => link.label.trim() || link.url.trim())
+        .map(link => ({ ...link, url: normalizeUrl(link.url), label: link.label.trim(), linkText: link.linkText.trim() }));
+      const updates: Partial<ClientProfile> = { fullName, executiveDirectorName, servicesAvailed, clientLinks: cleanedLinks };
       if (logoFile) updates.logoImageUrl = await uploadImage(logoFile, `clients/${clientId}/logo`);
       if (coverFile) updates.coverImageUrl = await uploadImage(coverFile, `clients/${clientId}/cover`);
       await updateClientProfile(clientId, updates);
@@ -203,6 +226,47 @@ export default function EditClientPage() {
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Links</h2>
+              <button type="button" onClick={addLink}
+                className="text-sm font-medium text-[#1a1a2e] hover:underline">
+                + Add link
+              </button>
+            </div>
+
+            {clientLinks.length === 0 ? (
+              <p className="text-sm text-gray-400">No links added yet.</p>
+            ) : (
+              <div className="space-y-3">
+                <div className="hidden sm:grid grid-cols-12 gap-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                  <span className="col-span-3">What is this</span>
+                  <span className="col-span-3">Hyperlink text</span>
+                  <span className="col-span-5">Link</span>
+                </div>
+                {clientLinks.map(link => (
+                  <div key={link.id} className="grid grid-cols-12 gap-2 items-center">
+                    <input value={link.label} onChange={e => updateLink(link.id, "label", e.target.value)}
+                      placeholder="What is this link"
+                      className="col-span-3 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    <input value={link.linkText} onChange={e => updateLink(link.id, "linkText", e.target.value)}
+                      placeholder="Hyperlink text"
+                      className="col-span-3 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    <input value={link.url} onChange={e => updateLink(link.id, "url", e.target.value)}
+                      placeholder="https://..."
+                      className="col-span-4 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
+                    <button type="button" onClick={() => removeLink(link.id)} aria-label="Remove link"
+                      className="col-span-1 flex items-center justify-center text-gray-400 hover:text-red-500 transition">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <div className="flex items-center justify-between pt-2 pb-8">

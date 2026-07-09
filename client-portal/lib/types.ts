@@ -1,5 +1,12 @@
 import { Timestamp } from "firebase/firestore";
 
+export interface ClientLink {
+  id: string;
+  label: string;
+  linkText: string;
+  url: string;
+}
+
 export interface ClientProfile {
   clickupFolderId: string;
   clickupFolderName: string;
@@ -11,6 +18,7 @@ export interface ClientProfile {
   coverImageUrl?: string;
   logoImageUrl?: string;
   servicesAvailed?: string[];
+  clientLinks?: ClientLink[];
   isActive?: boolean;
   createdAt?: Timestamp;
 }

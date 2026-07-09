@@ -1,6 +1,7 @@
 "use client";
 
 import type { ClientProfile } from "@/lib/types";
+import ClientLinksTable from "./ClientLinksTable";
 
 interface Props {
   profile: ClientProfile | null;
@@ -63,6 +64,8 @@ export default function ClientInfoTab({ profile }: Props) {
           </div>
         </div>
       )}
+
+      <ClientLinksTable links={profile.clientLinks} />
 
       {/* Sync status */}
       <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
