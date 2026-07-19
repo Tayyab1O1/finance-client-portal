@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   const isAuthenticated = request.cookies.has("auth_present");
 
   if (!isAuthenticated) {
-    if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard")) {
+    if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard") || pathname.startsWith("/bookkeeper")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
   }
@@ -18,5 +18,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*", "/bookkeeper/:path*"],
 };

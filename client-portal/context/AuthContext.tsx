@@ -20,8 +20,9 @@ const COOKIE_SECURITY = typeof window !== "undefined" && window.location.protoco
 interface UserProfile {
   uid: string;
   email: string;
-  role: "admin" | "client";
+  role: "admin" | "client" | "bookkeeper";
   clientId: string | null;
+  assignedClientIds?: string[];
 }
 
 interface AuthContextValue {

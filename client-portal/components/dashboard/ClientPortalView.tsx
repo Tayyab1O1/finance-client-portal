@@ -1,24 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { getClientProfile, getClientTasks } from "@/lib/firestore";
 import type { ClientProfile, Task } from "@/lib/types";
 import ClientInfoTab from "./ClientInfoTab";
 import TaskCalendarTab from "./TaskCalendarTab";
+import FormsTab from "./FormsTab";
+import DashboardPanel from "./DashboardPanel";
 
-type Tab = "info" | "tasks";
+type Tab = "info" | "tasks" | "forms" | "payable" | "receivable";
 
 const TABS = [
   { id: "info" as const, label: "Client Information", icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
   { id: "tasks" as const, label: "Task Calendar", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+  { id: "forms" as const, label: "Forms", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
+  { id: "payable" as const, label: "Payable / Expense", icon: "M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" },
+  { id: "receivable" as const, label: "Receivables", icon: "M17 9V7a4 4 0 00-8 0v2M5 9h14l1 12H4L5 9z" },
 ];
 
 interface Props {
   clientId: string;
-  adminOverlay?: boolean;
+  overlayLabel?: string;
 }
 
-export default function ClientPortalView({ clientId, adminOverlay = false }: Props) {
+export default function ClientPortalView({ clientId, overlayLabel }: Props) {
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === "admin";
   const [clientProfile, setClientProfile] = useState<ClientProfile | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,9 +72,9 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
             )}
           </div>
         </div>
-        {adminOverlay && (
+        {overlayLabel && (
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-2.5 sm:px-3 py-1 rounded-full border border-white/20">
-            Admin View
+            {overlayLabel}
           </div>
         )}
       </div>
@@ -74,7 +82,15 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
       {/* Tabs */}
       <div className="bg-white border-b border-gray-100 px-4 sm:px-6 md:px-8 shrink-0 overflow-x-auto">
         <nav className="flex gap-1 -mb-px w-max sm:w-auto">
-          {TABS.map(tab => (
+          {TABS.filter(tab => {
+            // Admin always sees every tab regardless of the client-facing enable
+            // toggles — those toggles control what the client (and bookkeeper)
+            // see, never what admin can inspect/manage. See RULES.md.
+            if (isAdmin) return true;
+            if (tab.id === "forms") return clientProfile?.formsEnabled && !!clientProfile.forms?.length;
+            if (tab.id === "payable" || tab.id === "receivable") return !!clientProfile?.dashboardsEnabled?.[tab.id];
+            return true;
+          }).map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id ? "border-[#1a1a2e] text-[#1a1a2e]" : "border-transparent text-gray-500 hover:text-gray-700"
@@ -98,6 +114,9 @@ export default function ClientPortalView({ clientId, adminOverlay = false }: Pro
           <>
             {activeTab === "info" && <ClientInfoTab profile={clientProfile} />}
             {activeTab === "tasks" && <TaskCalendarTab tasks={tasks} />}
+            {activeTab === "forms" && <FormsTab forms={clientProfile?.forms ?? []} />}
+            {activeTab === "payable" && <DashboardPanel clientId={clientId} dashboardType="payable" />}
+            {activeTab === "receivable" && <DashboardPanel clientId={clientId} dashboardType="receivable" />}
           </>
         )}
       </main>

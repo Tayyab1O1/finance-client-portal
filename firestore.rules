@@ -3,17 +3,34 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function callerDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      return request.auth != null && callerDoc().role == "admin";
+    }
+
+    function isClientOwner(clientId) {
+      return request.auth != null && callerDoc().clientId == clientId;
+    }
+
+    function isBookkeeperFor(clientId) {
+      return request.auth != null && callerDoc().role == "bookkeeper" &&
+        clientId in callerDoc().assignedClientIds;
+    }
+
+    function canViewClient(clientId) {
+      return isAdmin() || isClientOwner(clientId) || isBookkeeperFor(clientId);
     }
 
     // Users collection
     match /users/{uid} {
       allow read: if request.auth != null &&
         (request.auth.uid == uid || isAdmin());
-      allow create: if isAdmin(); // admins create client user records
-      allow update: if false;
+      allow create: if isAdmin(); // admins create client/bookkeeper user records
+      // Admins can update role/clientId/assignedClientIds (e.g. assigning clients to a bookkeeper)
+      allow update: if isAdmin();
       allow delete: if false;
     }
 
@@ -25,19 +42,53 @@ service cloud.firestore {
 
     // Clients collection
     match /clients/{clientId} {
-      allow read: if request.auth != null &&
-        (isAdmin() ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.clientId == clientId);
+      allow read: if canViewClient(clientId);
 
       // Admins can update profile fields (but not sync fields)
       allow update: if isAdmin();
 
       match /tasks/{taskId} {
-        allow read: if request.auth != null &&
-          (isAdmin() ||
-           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.clientId == clientId);
+        allow read: if canViewClient(clientId);
         allow write: if false;
       }
+    }
+
+    // AP/AR transaction dashboards — reads are scoped directly by role so the
+    // grid UI can use live onSnapshot listeners; all writes go through the
+    // writeTransactionField Callable (Admin SDK), which enforces per-field
+    // ownership server-side. Direct client writes are never allowed here.
+    match /apTransactions/{txId} {
+      allow read: if canViewClient(resource.data.clientId);
+      allow write: if false;
+    }
+    match /arTransactions/{txId} {
+      allow read: if canViewClient(resource.data.clientId);
+      allow write: if false;
+    }
+
+    // Per-client, per-dashboard form schema (auto-discovered Fillout question
+    // columns) — same read scoping, written only by the ingestion function.
+    match /formSchemas/{schemaId} {
+      allow read: if canViewClient(resource.data.clientId);
+      allow write: if false;
+    }
+
+    // Fillout form -> client/dashboard mapping. Admin-only operational config;
+    // created/deleted only via the connect/disconnect-form API routes (which
+    // also register/deregister the real Fillout webhook), never a direct write.
+    match /filloutFormMappings/{filloutFormId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Admin-defined manual/status field definitions per client + dashboard
+    // (label, type, options, who's allowed to fill each one in). Pure config
+    // with no external side effect (unlike the Fillout mapping above), so
+    // admin can write it directly like a client profile field — everyone who
+    // can view the client needs to read it to render the grid's columns.
+    match /dashboardFieldConfigs/{configId} {
+      allow read: if canViewClient(resource.data.clientId);
+      allow write: if isAdmin();
     }
   }
 }

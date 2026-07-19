@@ -70,7 +70,7 @@ export default function AdminClientView() {
         </div>
       </div>
 
-      <ClientPortalView clientId={clientId} adminOverlay />
+      <ClientPortalView clientId={clientId} overlayLabel="Admin View" />
     </div>
   );
 }

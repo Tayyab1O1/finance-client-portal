@@ -4,18 +4,17 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function BookkeeperProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (loading) return;
     if (!user) { router.replace("/login"); return; }
-    if (profile?.role === "admin") { router.replace("/admin"); return; }
-    if (profile?.role === "bookkeeper") { router.replace("/bookkeeper"); return; }
+    if (profile && profile.role !== "bookkeeper") { router.replace("/login"); return; }
   }, [user, profile, loading, router]);
 
-  if (loading || !user || !profile) {
+  if (loading || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
@@ -26,6 +25,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  if (profile.role !== "client") return null;
+  if (profile.role !== "bookkeeper") return null;
   return <>{children}</>;
 }

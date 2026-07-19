@@ -11,10 +11,15 @@ export default function SettingsPage() {
   const [newService, setNewService] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [filloutWebhookBaseUrl, setFilloutWebhookBaseUrl] = useState("");
   const { showToast } = useToast();
 
   useEffect(() => {
-    getPortalSettings().then(s => { setServices(s.servicesOptions); setLoading(false); });
+    getPortalSettings().then(s => {
+      setServices(s.servicesOptions);
+      setFilloutWebhookBaseUrl(s.filloutWebhookBaseUrl ?? "");
+      setLoading(false);
+    });
   }, []);
 
   function addService() {
@@ -49,7 +54,7 @@ export default function SettingsPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      await updatePortalSettings({ servicesOptions: services });
+      await updatePortalSettings({ servicesOptions: services, filloutWebhookBaseUrl: filloutWebhookBaseUrl.trim() });
       setSaved(true);
       showToast("Settings saved.", "success");
       setTimeout(() => setSaved(false), 3000);
@@ -121,6 +126,17 @@ export default function SettingsPage() {
               Add
             </button>
           </div>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-gray-100 p-6 mt-5">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">Fillout Integration</h2>
+          <p className="text-xs text-gray-400 mb-4">
+            The deployed <code className="bg-gray-100 px-1 rounded">filloutWebhook</code> Function URL — set this once after deploying,
+            then connect individual client forms from each client&apos;s edit page.
+          </p>
+          <input value={filloutWebhookBaseUrl} onChange={e => setFilloutWebhookBaseUrl(e.target.value)}
+            placeholder="https://filloutwebhook-xxxxx-uc.a.run.app"
+            className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a1a2e] transition" />
         </section>
 
         <div className="flex justify-end mt-5 pb-8">

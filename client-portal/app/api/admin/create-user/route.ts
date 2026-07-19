@@ -25,9 +25,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { email, password, clientId } = await request.json();
-    if (!email || !password || !clientId) {
-      return NextResponse.json({ error: "email, password, and clientId are required" }, { status: 400 });
+    const { email, password, clientId, role = "client" } = await request.json();
+    if (!email || !password) {
+      return NextResponse.json({ error: "email and password are required" }, { status: 400 });
+    }
+    if (role !== "client" && role !== "bookkeeper") {
+      return NextResponse.json({ error: "role must be 'client' or 'bookkeeper'" }, { status: 400 });
+    }
+    if (role === "client" && !clientId) {
+      return NextResponse.json({ error: "clientId is required for role 'client'" }, { status: 400 });
     }
 
     // Create Auth user server-side (no client sign-in side-effect)
@@ -37,8 +43,9 @@ export async function POST(request: NextRequest) {
     await adminDb.collection("users").doc(userRecord.uid).set({
       uid: userRecord.uid,
       email,
-      role: "client",
-      clientId,
+      role,
+      clientId: role === "client" ? clientId : null,
+      ...(role === "bookkeeper" ? { assignedClientIds: [] } : {}),
       createdAt: new Date(),
     });
 

@@ -28,6 +28,10 @@ export default function AdminNav() {
             className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-sm transition whitespace-nowrap ${pathname === "/admin" ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
             Dashboard
           </Link>
+          <Link href="/admin/bookkeepers"
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-sm transition whitespace-nowrap ${pathname === "/admin/bookkeepers" ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}>
+            Bookkeepers
+          </Link>
         </nav>
       </div>
       <div className="flex items-center gap-1 sm:gap-3 shrink-0">
