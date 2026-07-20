@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${onest.variable} ${lora.variable} h-full antialiased`}>
-      <body className="min-h-full bg-paper font-sans">
+      <body className="min-h-full bg-paper font-sans" suppressHydrationWarning>
         <AuthProvider>
           <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
